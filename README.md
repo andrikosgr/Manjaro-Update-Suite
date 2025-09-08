@@ -1,4 +1,6 @@
 # 📦 Manjaro Update Suite
+![Release](https://img.shields.io/github/v/release/andrikosgr/Manjaro-Update-Suite?label=Latest%20Release)
+
 
 A GUI-powered, future-proof system updater for Manjaro and Arch-based Linux distributions.  
 Built with Bash and Zenity, this tool gives you full control over system maintenance—without needing to touch the terminal.
