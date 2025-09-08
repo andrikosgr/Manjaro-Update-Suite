@@ -60,14 +60,20 @@ check_kernel_update() {
       --title="Kernel Manager" \
       --text="Current kernel: $CURRENT_KERNEL\n\nSelect a kernel to install:" \
       --column="Available Kernels" \
-      --width=500 --height=300)
+      --width=500 --height=300 2>/dev/null)
+
+    if [[ $? -ne 0 ]]; then
+      log "Kernel selection dialog canceled."
+      zenity --info --text="Kernel selection canceled. No changes made." --width=400
+      return 0
+    fi
 
     if [[ -n "$SELECTED_KERNEL" ]]; then
       zenity --question --text="Install kernel $SELECTED_KERNEL?" --width=400 && \
       run sudo mhwd-kernel -i "$SELECTED_KERNEL" rmc && \
       zenity --info --text="✅ Kernel $SELECTED_KERNEL installed successfully." --width=400
     else
-      log "Kernel update skipped."
+      log "No kernel selected."
       zenity --info --text="No kernel selected. Skipping kernel update." --width=400
     fi
   fi
