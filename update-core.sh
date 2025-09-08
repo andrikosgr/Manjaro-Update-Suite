@@ -113,7 +113,6 @@ summary_after() {
 
 disk_summary
 kernel_info
-check_kernel_update
 do_backup
 refresh_mirrors
 refresh_keys
