@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Update Control Panel
+Comment=Safe, future-proof Manjaro updater
+Exec=/bin/bash -lc "$HOME/update-gui.sh"
+Icon=system-software-update
+Terminal=false
+Categories=System;Settings;
