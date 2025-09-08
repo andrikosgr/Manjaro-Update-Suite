@@ -47,12 +47,22 @@ kernel_info() {
 check_kernel_update() {
   log "Checking for kernel updates..."
   if have_cmd mhwd-kernel; then
-    run mhwd-kernel -l
-    zenity --question --title="Kernel Update" --text="Install latest kernel if available?"
-    if [[ $? -eq 0 ]]; then
-      run sudo mhwd-kernel -i linux-lts rmc
+    CURRENT_KERNEL=$(uname -r)
+    AVAILABLE_KERNELS=$(mhwd-kernel -l | awk '/linux/ {print $2}' | sort -u)
+
+    SELECTED_KERNEL=$(echo "$AVAILABLE_KERNELS" | zenity --list \
+      --title="Kernel Manager" \
+      --text="Current kernel: $CURRENT_KERNEL\n\nSelect a kernel to install:" \
+      --column="Available Kernels" \
+      --width=500 --height=300)
+
+    if [[ -n "$SELECTED_KERNEL" ]]; then
+      zenity --question --text="Install kernel $SELECTED_KERNEL?" --width=400 && \
+      run sudo mhwd-kernel -i "$SELECTED_KERNEL" rmc && \
+      zenity --info --text="✅ Kernel $SELECTED_KERNEL installed successfully." --width=400
     else
       log "Kernel update skipped."
+      zenity --info --text="No kernel selected. Skipping kernel update." --width=400
     fi
   fi
 }
