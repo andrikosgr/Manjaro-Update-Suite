@@ -40,8 +40,14 @@ disk_summary() {
 }
 
 kernel_info() {
-  log "Current kernel: $(uname -r)"
+  CURRENT_KERNEL=$(uname -r)
+  log "Current kernel: $CURRENT_KERNEL"
   have_cmd mhwd-kernel && run mhwd-kernel -li || true
+
+  zenity --info \
+    --title="Kernel Info" \
+    --text="🧠 Current kernel: $CURRENT_KERNEL" \
+    --width=400
 }
 
 check_kernel_update() {
