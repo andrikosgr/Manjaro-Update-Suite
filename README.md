@@ -1,5 +1,6 @@
 # 📦 Manjaro Update Suite
-![Release](https://img.shields.io/github/v/release/andrikosgr/Manjaro-Update-Suite?label=Latest%20Release)
+[![Release](https://img.shields.io/github/v/release/andrikosgr/Manjaro-Update-Suite?label=Latest%20Release)](https://github.com/andrikosgr/Manjaro-Update-Suite/releases)
+
 
 
 A GUI-powered, future-proof system updater for Manjaro and Arch-based Linux distributions.  
