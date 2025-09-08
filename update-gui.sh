@@ -10,14 +10,10 @@ if pgrep -x pamac-manager >/dev/null 2>&1; then
   [[ $? -eq 0 ]] && killall pamac-manager 2>/dev/null || true
 fi
 
-# 🧠 Detect current kernel and available options
-CURRENT_KERNEL=$(uname -r)
-AVAILABLE_KERNELS=$(mhwd-kernel -l | awk '/linux/ {print $2}' | sort -u | paste -sd '|' -)
-
-# 🧙‍♂️ Show update options
+# 🧙‍♂️ Show update options (no kernel selection yet)
 CONF="$(zenity --forms \
   --title="Manjaro Update Control Panel" \
-  --text="Current kernel: $CURRENT_KERNEL\n\nChoose your update options:" \
+  --text="Choose your update options:" \
   --separator="|" \
   --add-combo="Refresh mirrors" --combo-values="Yes|No" \
   --add-combo="Refresh keys"    --combo-values="No|Yes" \
@@ -26,9 +22,8 @@ CONF="$(zenity --forms \
   --add-combo="Clean cache"     --combo-values="Yes|No" \
   --add-combo="Remove orphans"  --combo-values="Yes|No" \
   --add-combo="Create backup"   --combo-values="No|Yes" \
-  --add-combo="Install new kernel?" --combo-values="No|Yes" \
-  --add-combo="Select kernel to install" --combo-values="$AVAILABLE_KERNELS" \
-  --width=500 --height=450
+  --add-combo="Run kernel update?" --combo-values="No|Yes" \
+  --width=500 --height=400
 )" || exit 1
 
 # 🔄 Convert Yes/No to 1/0
@@ -43,8 +38,7 @@ IFS="|" read -r \
   CLEAN_CACHE \
   REMOVE_ORPHANS \
   CREATE_BACKUP \
-  INSTALL_KERNEL \
-  SELECTED_KERNEL <<< "$CONF"
+  RUN_KERNEL_UPDATE <<< "$CONF"
 
 export DO_REFRESH_MIRRORS="$(to_bool "$REFRESH_MIRRORS")"
 export DO_REFRESH_KEYS="$(to_bool "$REFRESH_KEYS")"
@@ -54,11 +48,29 @@ export DO_CLEAN_CACHE="$(to_bool "$CLEAN_CACHE")"
 export DO_REMOVE_ORPHANS="$(to_bool "$REMOVE_ORPHANS")"
 export DO_BACKUP="$(to_bool "$CREATE_BACKUP")"
 
-# 🛠️ Trigger kernel install if selected
-if [[ "$INSTALL_KERNEL" == "Yes" && -n "$SELECTED_KERNEL" ]]; then
-  zenity --question --text="Install kernel $SELECTED_KERNEL?" --width=400 && \
-  sudo mhwd-kernel -i "$SELECTED_KERNEL" rmc && \
-  zenity --info --text="✅ Kernel $SELECTED_KERNEL installed successfully." --width=400
+# 🧠 If kernel update is selected, prompt for password and show kernel options
+if [[ "$RUN_KERNEL_UPDATE" == "Yes" ]]; then
+  PASSWORD=$(zenity --password --title="Enter your password for kernel installation" --width=400)
+  if [[ -z "$PASSWORD" ]]; then
+    zenity --error --text="❌ No password entered. Skipping kernel update." --width=400
+  else
+    CURRENT_KERNEL=$(uname -r)
+    AVAILABLE_KERNELS=$(mhwd-kernel -l | awk '/linux/ {print $2}' | sort -u)
+
+    SELECTED_KERNEL=$(echo "$AVAILABLE_KERNELS" | zenity --list \
+      --title="Kernel Manager" \
+      --text="Current kernel: $CURRENT_KERNEL\n\nSelect a kernel to install:" \
+      --column="Available Kernels" \
+      --width=500 --height=300 2>/dev/null)
+
+    if [[ -n "$SELECTED_KERNEL" ]]; then
+      zenity --question --text="Install kernel $SELECTED_KERNEL?" --width=400 && \
+      echo "$PASSWORD" | sudo -S mhwd-kernel -i "$SELECTED_KERNEL" rmc && \
+      zenity --info --text="✅ Kernel $SELECTED_KERNEL installed successfully." --width=400
+    else
+      zenity --info --text="No kernel selected. Skipping kernel update." --width=400
+    fi
+  fi
 else
   echo "Kernel update skipped."
 fi
