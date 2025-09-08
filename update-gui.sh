@@ -51,7 +51,13 @@ if [[ -n "${LATEST:-}" ]]; then
     --width=900 --height=600 \
     --ok-label="Close" || true
 else
-  zenity --warning --text="Log file not found. Update running in background (PID $CORE_PID)."
+  zenity --warning --text="Log file not found. Update running in background (PID $CORE_PID)." --width=400
 fi
 
-wait $CORE_PID && zenity --info --text="✅ Update completed" || zenity --error --text="❌ Update failed"
+wait $CORE_PID && \
+zenity --question --text="✅ Update completed.\n\nDo you want to view the log file?" --width=400 && \
+xdg-open "$LOGFILE" || \
+zenity --info --text="✅ Update completed. Log viewer skipped." --width=400
+
+# If update failed
+[ $? -ne 0 ] && zenity --error --text="❌ Update failed. Please check your system logs." --width=400
