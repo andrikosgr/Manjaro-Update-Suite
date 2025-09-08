@@ -13,7 +13,7 @@ fi
 # 🧙‍♂️ Show update options
 CONF="$(zenity --forms \
   --title="Manjaro Update Control Panel" \
-  --text="Choose your update options" \
+  --text="Current kernel: $CURRENT_KERNEL\n\nChoose your update options:" \
   --separator="|" \
   --add-combo="Refresh mirrors" --combo-values="Yes|No" \
   --add-combo="Refresh keys"    --combo-values="No|Yes" \
@@ -22,7 +22,10 @@ CONF="$(zenity --forms \
   --add-combo="Clean cache"     --combo-values="Yes|No" \
   --add-combo="Remove orphans"  --combo-values="Yes|No" \
   --add-combo="Create backup"   --combo-values="No|Yes" \
-) " || exit 1
+  --add-combo="Install new kernel?" --combo-values="No|Yes" \
+  --add-combo="Select kernel to install" --combo-values="$AVAILABLE_KERNELS" \
+  --width=500 --height=400
+)" || exit 1
 
 to_bool() { [[ "$1" == "Yes" ]] && echo 1 || echo 0; }
 
